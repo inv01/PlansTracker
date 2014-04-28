@@ -8,14 +8,15 @@
     <string name="title_activity_details">Details</string>
     <string name="img_name">contact name</string>
     <string name="img_phone">phone number</string>
-    <string name="img_email">email address</string>
-    <string name="img_price">price</string>
-    <string name="img_hours">spent hours</string>
+    <string name="img_email">Email</string>
+    <string name="img_price">Price</string>
+    <string name="img_hours">Hours</string>
     <string name="edit_data">edit</string>
     <string name="save_data">save changes</string>
     <string name="delete_data">delete task</string>
-    <string name="data_comment">comment</string>
+    <string name="data_comment">Note</string>
     <string name="img_contact">picture</string>
     <string name="more">Location/Picture</string>
     <string name="less">Hide</string>
+    <string name="update_location"> Update location</string>
 </resources>

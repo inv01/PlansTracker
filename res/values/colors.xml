@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blue_shadow">#0080FF</color>
+    <color name="pink_shadow">#CC0066</color>
+    <color name="gold_shadow">#FFFF00</color>
+    <color name="green_color">#7FFFD4</color>
+    <color name="base_color">#FFFFFF</color>
+    <color name="orange_color">#FFA500</color>
+    <color name="drawer_color">#E5FFCC</color>
+    <!-- FFFACD -->
+</resources>

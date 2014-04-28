@@ -3,13 +3,11 @@
        xmlns:android="http://schemas.android.com/apk/res/android"
        android:layout_width="match_parent" 
        android:layout_height="match_parent"
-       android:id="@+id/frameLayout0">
-<!--  <LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical" 
-    android:background="#808080"
-    android:id="@+id/linearLayout0">-->
+       android:id="@+id/frameLayout0"
+       android:paddingBottom="@dimen/activity_vertical_margin"
+       android:paddingLeft="@dimen/activity_horizontal_margin"
+       android:paddingRight="@dimen/activity_horizontal_margin"
+       android:paddingTop="@dimen/activity_vertical_margin">
     <LinearLayout
             android:id="@+id/details_layout"
             android:layout_width="match_parent"
@@ -30,13 +28,13 @@
                 android:src="@drawable/ic_name"
                 android:id="@+id/btnContact"
                 />
-            <AutoCompleteTextView
+            <EditText
                 android:id="@+id/edt_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName" >
                 <requestFocus />
-            </AutoCompleteTextView>
+            </EditText>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -58,11 +56,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-            <ImageView
+            <TextView
                 android:contentDescription="@string/img_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_email"
+                android:text="@string/img_email"
                 />
             <EditText
                 android:id="@+id/edt_email"
@@ -74,11 +72,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-            <ImageView
+            <TextView
                 android:contentDescription="@string/img_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_money"
+                android:text="@string/img_price"
                 />
             <EditText
                 android:id="@+id/edt_price"
@@ -87,11 +85,11 @@
                 android:ems="5"
                 android:inputType="numberDecimal" >
             </EditText>
-            <ImageView
+            <TextView
                 android:contentDescription="@string/img_hours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_clock"
+                android:text="@string/img_hours"
                 />
             <EditText
                 android:id="@+id/edt_hours"
@@ -104,11 +102,11 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-            <ImageView
+            <TextView
                 android:contentDescription="@string/data_comment"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_memo"
+                android:text="@string/data_comment"
                 />
             <EditText
                 android:id="@+id/edtMemo"
@@ -164,24 +162,40 @@
             android:id="@+id/content"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" >
+            android:orientation="vertical" 
+            android:background= "@color/drawer_color"
+            android:paddingBottom="@dimen/activity_vertical_margin"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/activity_vertical_margin">
             <ImageView
                 android:contentDescription="@string/img_contact"
                 android:id="@+id/btnPicture"
-                android:layout_width="wrap_content"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:src="@drawable/ic_img" />
+            <TextView 
+                android:id="@+id/address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lines="5"
                 />
             <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            android:layout_height="wrap_content"
+            android:background= "@color/drawer_color" >
             <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="left"
                 android:background="@drawable/btn_refresh"
                 android:id="@+id/btnRefreshLocation"
                 android:contentDescription="@string/refresh_data"
                 android:scaleType="center"/>
+            <TextView 
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/update_location"
+                />
             <ProgressBar
                 android:id="@+id/address_progress"
                 android:layout_width="wrap_content"
@@ -190,14 +204,6 @@
                 android:indeterminate="true"
                 android:visibility="gone" />
             </LinearLayout>
-            <TextView 
-                android:id="@+id/address"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:lines="5"
-                />
         </LinearLayout>
     </SlidingDrawer>
-
-<!--</LinearLayout>-->
 </FrameLayout>
