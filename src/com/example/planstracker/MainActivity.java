@@ -4,30 +4,20 @@ import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.DatePicker;
 
-public class MainActivity extends FragmentActivity {
-  private DatePicker date;
+public class MainActivity extends FragmentActivity 
+                          implements DetailsFragment.OnTaskChangedListener{
+  private TaskListFragment taskList;
   
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
-        TaskListFragment calendar = new TaskListFragment();
+        taskList = new TaskListFragment();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, calendar).commit();
+                    .add(R.id.container, taskList).commit();
         }
-
-        date = (DatePicker) findViewById(R.id.dpDate);
-        date.setCalendarViewShown(false);
-        
-    }
-    
-    public void onRefreshClick(View view){
-    
     }
     
     @Override
@@ -43,5 +33,10 @@ public class MainActivity extends FragmentActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onTaskChanged() {
+        taskList.setAdapter();
     }
 }

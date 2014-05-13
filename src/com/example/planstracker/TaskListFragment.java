@@ -2,26 +2,63 @@ package com.example.planstracker;
 
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
+import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 public class TaskListFragment extends ListFragment {
   boolean mDualPane;
+  private PlansDbHelper mDbHelper;
+  private SQLiteDatabase db;
   int mCurCheckPosition = 0;
+  private SparseArray<String> list_values;
+  
+  private static class EventsArrayAdapter extends ArrayAdapter<Object> {
+      private final Context context;
+      private final SparseArray<String> values;
 
+      public EventsArrayAdapter(Context context, SparseArray<String> values) {
+        super(context, android.R.layout.simple_list_item_1, new String[values.size()]);
+        this.context = context;
+        this.values = values;
+      }
+      @Override
+      public View getView(int position, View convertView, ViewGroup parent) {
+        LayoutInflater inflater = (LayoutInflater) context
+            .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        View rowView = inflater.inflate(android.R.layout.simple_list_item_1, parent, false);
+        TextView textView = (TextView) rowView.findViewById(android.R.id.text1);
+        textView.setText(values.get(values.keyAt(position)));
+        return rowView;
+      }
+    } 
+  
+  public void setAdapter(){
+      mDbHelper = new PlansDbHelper(getActivity());
+      db = mDbHelper.getWritableDatabase();
+      list_values = mDbHelper.getAllTasks(db);
+      EventsArrayAdapter adapter = new EventsArrayAdapter(getActivity(), list_values);
+      setListAdapter(adapter);
+  }
+  
+  public void onStart(){
+      super.onStart();
+      setAdapter();
+  }
+  
   @Override
   public void onActivityCreated(Bundle savedState) {
       super.onActivityCreated(savedState);
-      String[] values = new String[] { "Android", "iPhone", "WindowsMobile",
-          "Blackberry", "WebOS", "Ubuntu", "Windows7", "Max OS X",
-          "Linux", "OS/2" };
-      ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(),
-          android.R.layout.simple_list_item_1, values);
-      setListAdapter(adapter);
-       View detailsFrame = getActivity().findViewById(R.id.details);
+      
+      View detailsFrame = getActivity().findViewById(R.id.details);
       mDualPane = detailsFrame != null
               && detailsFrame.getVisibility() == View.VISIBLE;
 
@@ -30,11 +67,12 @@ public class TaskListFragment extends ListFragment {
       }
 
       if (mDualPane) {
+          setAdapter();
           getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
           showDetails(mCurCheckPosition);
       }
   }
-
+  
   @Override
   public void onSaveInstanceState(Bundle outState) {
       super.onSaveInstanceState(outState);
@@ -59,8 +97,8 @@ public class TaskListFragment extends ListFragment {
 
           DetailsFragment details = (DetailsFragment)
                   getFragmentManager().findFragmentById(R.id.details);
-          if (details == null || details.getShownIndex() != index) {
-              details = DetailsFragment.newInstance(index);
+          if (details == null || details.getEventID() != index) {
+              details = DetailsFragment.newInstance(list_values.keyAt(index));
 
               FragmentTransaction ft
                       = getFragmentManager().beginTransaction();
@@ -73,7 +111,7 @@ public class TaskListFragment extends ListFragment {
       } else {
           Intent intent = new Intent();
           intent.setClass(getActivity(), DetailsActivity.class);
-          intent.putExtra("index", index);
+          intent.putExtra("index", list_values.keyAt(index));
           startActivity(intent);
       }
   }

@@ -4,7 +4,7 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 
-public class DetailsActivity extends FragmentActivity {
+public class DetailsActivity extends FragmentActivity implements DetailsFragment.OnTaskChangedListener{
   @Override
   protected void onCreate(Bundle savedInstanceState) {
       super.onCreate(savedInstanceState);
@@ -25,4 +25,7 @@ public class DetailsActivity extends FragmentActivity {
                   android.R.id.content, details).commit();
       }
   }
+
+@Override
+public void onTaskChanged() {}
 }

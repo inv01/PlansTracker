@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">PlansTracker</string>
-    <string name="title_activity_main">Calendar</string>
-    <string name="tv_selectdate">Please select the date:</string>
+    <string name="title_activity_main">Plans Tracker</string>
     <string name="action_settings">Settings</string>
     <string name="refresh_data">refresh</string>
     <string name="title_activity_details">Details</string>
@@ -12,11 +11,26 @@
     <string name="img_price">Price</string>
     <string name="img_hours">Hours</string>
     <string name="edit_data">edit</string>
-    <string name="save_data">save changes</string>
+	<string name="task_date">event date</string>
+	<string name="save_data">save changes</string>
     <string name="delete_data">delete task</string>
     <string name="data_comment">Note</string>
     <string name="img_contact">picture</string>
     <string name="more">Location/Picture</string>
     <string name="less">Hide</string>
     <string name="update_location"> Update location</string>
+    <string name="current_location">Current location: undefined</string>
+    <string name="add_newtask">ADD NEW TASK</string>
+    <string name="changes_saved">Changes saved</string>
+    <string name="task_deleted">Deleted</string>
+    <string-array name="week_days">
+        <item>Sun</item>
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+    </string-array>
+    
 </resources>
