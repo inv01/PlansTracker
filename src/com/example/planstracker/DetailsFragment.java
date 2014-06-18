@@ -1,5 +1,7 @@
 package com.example.planstracker;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -11,16 +13,18 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.app.Activity;
-import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.TimePickerDialog;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
+import android.media.ExifInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -29,18 +33,20 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.provider.Settings;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -48,6 +54,7 @@ import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
 
 
 public class DetailsFragment extends Fragment 
@@ -67,10 +74,26 @@ public class DetailsFragment extends Fragment
   
   private final static int
   CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+//Define an object that holds accuracy and frequency parameters
+  private LocationRequest mLocationRequest;
+
+  static final int REQUEST_IMAGE_CAPTURE = 1;
+  static final int CONTACT_VIEW = 2;
+//Milliseconds per second
+  private static final int MILLISECONDS_PER_SECOND = 1000;
+  // Update frequency in seconds
+  public static final int UPDATE_INTERVAL_IN_SECONDS = 5;
+  // Update frequency in milliseconds
+  private static final long UPDATE_INTERVAL =
+          MILLISECONDS_PER_SECOND * UPDATE_INTERVAL_IN_SECONDS;
+  // The fastest update frequency, in seconds
+  private static final int FASTEST_INTERVAL_IN_SECONDS = 3;
+  // A fast frequency ceiling in milliseconds
+  private static final long FASTEST_INTERVAL =
+          MILLISECONDS_PER_SECOND * FASTEST_INTERVAL_IN_SECONDS;
   
   OnTaskChangedListener mCallback;
 
-  // Container Activity must implement this interface
   public interface OnTaskChangedListener {
       public void onTaskChanged();
   }
@@ -98,7 +121,6 @@ public class DetailsFragment extends Fragment
   public int getEventID() {
       return getArguments().getInt("index", 0);
   }
-  
   @Override
   public View onCreateView(LayoutInflater inflater,
           ViewGroup container, Bundle savedInstanceState) {
@@ -108,7 +130,7 @@ public class DetailsFragment extends Fragment
       mDbHelper = new PlansDbHelper(getActivity());
       db = mDbHelper.getWritableDatabase();
       pe = mDbHelper.getPlanEventById(db, getEventID());
-      
+      db.close();
       view = inflater
         .inflate(R.layout.details_fragment, container, false);
       edtContactName = (EditText) view.findViewById(R.id.edt_name);
@@ -126,7 +148,7 @@ public class DetailsFragment extends Fragment
       btnDateTime.setOnClickListener(new OnClickListener(){
         @Override
         public void onClick(View v) {
-          onChangeDate();
+          onChangeTime();
         }
       });
       ImageView btnContact = (ImageView) view.findViewById(R.id.btnContact);
@@ -157,7 +179,9 @@ public class DetailsFragment extends Fragment
             pe.setNote(edt_memo.getText().toString());
             pe.setMoney(Double.parseDouble(edt_price.getText().toString()));
             pe.setHours(Double.parseDouble(edt_hours.getText().toString()));
+            db = mDbHelper.getWritableDatabase();
             pe = mDbHelper.savePlanEvent(db, pe);
+            db.close();
             Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.changes_saved),
                     Toast.LENGTH_SHORT).show();
             mCallback.onTaskChanged();
@@ -167,7 +191,9 @@ public class DetailsFragment extends Fragment
       btnDelete.setOnClickListener(new OnClickListener(){
         @Override
         public void onClick(View v) {
+            db = mDbHelper.getWritableDatabase();
             mDbHelper.onRemoveRecord(db, pe.getId());
+            db.close();
             pe = new PlanEvent();
             initViews(pe);
             Toast.makeText(getActivity(), getActivity().getResources().getString(R.string.task_deleted),
@@ -186,56 +212,88 @@ public class DetailsFragment extends Fragment
       btnPicture.setOnClickListener(new OnClickListener(){
         @Override
         public void onClick(View v) {
-          onPictureClick(v);
+          onPictureClick();
         }
       });
       
       return view;
   }
   
+  public void clearViews(){
+      edtContactName.setText("");
+      edt_phone.setText("");
+      edt_email.setText("");
+      edt_memo.setText("");
+      edt_price.setText("");
+      edt_hours.setText("");
+      mAddress.setText("");
+      btnPicture.setImageDrawable(getResources().
+              getDrawable(R.drawable.btn_img_draw));
+  }
+  
   public void initViews(PlanEvent p){
-      setUIEventDate(pe);
+      clearViews();
+      setUIEventDate();
+      if (p.getId() < 1) return;
+      
       edtContactName.setText(p.getPerson_name());
       edt_phone.setText(p.getPhone_number());
       edt_email.setText(p.getEmail_address());
       edt_memo.setText(p.getNote());
       edt_price.setText("" + p.getMoney());
       edt_hours.setText("" + p.getHours());
-      if (p.getEvent_location().getLoc_str() != ""){
-      mAddress.setText(p.getEvent_location().getLoc_str());
+      String loc_str = p.getEvent_location().getLoc_str();
+      if (loc_str != ""){
+          mAddress.setText(loc_str);
       } else mAddress.setText(getResources().getString(R.string.current_location));
       if(p.getPic() == null) return;
       Bitmap bitmap = BitmapFactory.decodeByteArray(p.getPic(), 0, p.getPic().length);
       btnPicture.setImageBitmap(bitmap);
   }
-  
+
   public void onContactClick(View view){
       Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);  
-      startActivityForResult(intent, 1);
+      startActivityForResult(intent, CONTACT_VIEW);
   }
-  
   @Override
   public void onActivityResult(int reqCode, int resultCode, Intent data) {
       super.onActivityResult(reqCode, resultCode, data);
-      switch (reqCode) {
-          case CONNECTION_FAILURE_RESOLUTION_REQUEST :
-          /*
-           * If the result code is Activity.RESULT_OK, try
-           * to connect again
-           */
-              switch (resultCode) {
-                  case Activity.RESULT_OK :
-                    if (servicesConnected()){
-                      Toast.makeText(
-                          getActivity().getBaseContext(),
-                          "Location service is available now", Toast.LENGTH_LONG).show();
-                    }
-                    break;
-              }
+        if (reqCode == CONNECTION_FAILURE_RESOLUTION_REQUEST
+                && resultCode == Activity.RESULT_OK) {
+            if (servicesConnected()) {
+                Toast.makeText(getActivity().getBaseContext(),
+                        "Location service is available now", Toast.LENGTH_LONG)
+                        .show();
+            }
+            return;
+        }
+
+      if (reqCode == REQUEST_IMAGE_CAPTURE && resultCode == Activity.RESULT_OK) {
+          String filename = "shotPlace.jpg";
+          File filepath = Environment
+                  .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+          
+          File pictureFile = new File(filepath+"/"+filename);
+          ExifInterface exif = null;
+          try {
+              exif = new ExifInterface(pictureFile.getPath());
+          } catch (IOException e) {
+              Log.e("onActivityResult could not create ExifInterface:",
+                      e.getMessage());
+          }
+          if (exif == null) return;
+          byte[] imageData=exif.getThumbnail();
+          Bitmap  imageBitmap= BitmapFactory.decodeByteArray(imageData,0,imageData.length);
+          btnPicture.setImageBitmap(imageBitmap);
+          ByteArrayOutputStream stream = new ByteArrayOutputStream();
+          imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+          byte[] byteArray = stream.toByteArray();
+          pe.setPic(byteArray);
+          pictureFile.delete();
+          return;
       }
       
-      
-      if (resultCode == Activity.RESULT_OK) {
+      if (reqCode == CONTACT_VIEW && resultCode == Activity.RESULT_OK) {
           Uri contactData = data.getData();
           ContentResolver cr = getActivity().getBaseContext().getContentResolver();
           Cursor cur = cr.query(contactData, null, null, null, null);
@@ -279,72 +337,69 @@ public class DetailsFragment extends Fragment
                     emailCur.close();
               // END getting first email address
              }
-      }  
+      }
+      
   }
   
-  public void onChangeDate(){
+  public void onChangeTime(){
       final Calendar cal = Calendar.getInstance();
       cal.setTime(pe.getDate());
       
-      new DatePickerDialog(getActivity(),
-              new DatePickerDialog.OnDateSetListener() {
-                @Override 
-                public void onDateSet(DatePicker view, int y, int m, int d) {
-                    cal.set(Calendar.YEAR, y);
-                    cal.set(Calendar.MONTH, m);
-                    cal.set(Calendar.DAY_OF_MONTH, d);
-                    // now show the time picker
-                    new TimePickerDialog(getActivity(),
-                            new TimePickerDialog.OnTimeSetListener() {
-                            @Override 
-                            public void onTimeSet(TimePicker view, 
-                                    int h, int min) {
-                                cal.set(Calendar.HOUR_OF_DAY, h);
-                                cal.set(Calendar.MINUTE, min);
-                                
-                            }
-                        
-                        }
-                    , cal.get(Calendar.HOUR_OF_DAY), 
-                      cal.get(Calendar.MINUTE), true).show();
-                 }
+      new TimePickerDialog(getActivity(),
+              new TimePickerDialog.OnTimeSetListener() {
+              @Override 
+              public void onTimeSet(TimePicker view, 
+                      int h, int min) {
+                  cal.set(Calendar.HOUR_OF_DAY, h);
+                  cal.set(Calendar.MINUTE, min);
+                  pe.setDate(cal.getTime());
+                  date_text.setText(new SimpleDateFormat("dd/MM/yyyy HH:mm", 
+                          Locale.getDefault()).
+                          format(pe.getDate()));
               }
-          , cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
-      .show();
-      pe.setDate(cal.getTime());
-      setUIEventDate(pe);
+          }
+      , cal.get(Calendar.HOUR_OF_DAY), 
+        cal.get(Calendar.MINUTE), true).show();
   }
   
-  public void setUIEventDate(PlanEvent p){
+  public void setUIEventDate(){
       SimpleDateFormat sf = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-      date_text.setText(sf.format(p.getDate()));
+      if (pe.getId() == 0){
+          SharedPreferences app_preferences = 
+                  PreferenceManager.getDefaultSharedPreferences(getActivity());
+          long time = app_preferences.getLong("date", 0);
+          if (time == 0) {
+              pe.setDate(Calendar.getInstance().getTime());
+          } else {pe.setDateLong(time);}
+      }
+      date_text.setText(sf.format(pe.getDate()));
   }
-  
+
   public static boolean isMockLocationSet(Context context) { 
       if (Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ALLOW_MOCK_LOCATION).contentEquals("1")) { 
           return true;  
-      } 
-      else { 
-          return false;
-      } 
-  } 
+      } else {return false;} 
+  }
   
   public void onRefreshLocationClick(View view){
       if (servicesConnected()){
-          //ContentResolver cr = getActivity().getBaseContext().getContentResolver();
-          if (isMockLocationSet(getActivity().getBaseContext()))
-          mLocationClient.setMockMode(true);
-          mCurrentLocation = mLocationClient.getLastLocation();
-          if (Build.VERSION.SDK_INT >=
+          /*if (isMockLocationSet(getActivity().getBaseContext()))
+              mLocationClient.setMockMode(true);*/
+          //mLocationClient.requestLocationUpdates(mLocationRequest, this);
+          //mCurrentLocation = mLocationClient.getLastLocation();
+          getAddress();
+          //mLocationClient.removeLocationUpdates(this);
+      }
+  }
+  
+  private void getAddress(){
+      if (mCurrentLocation == null) return;
+      if (Build.VERSION.SDK_INT >=
               Build.VERSION_CODES.GINGERBREAD
                           &&
               Geocoder.isPresent()) {
-          // Show the activity indicator
-          //mActivityIndicator.setVisibility(View.VISIBLE);
-          
-          (new GetAddressTask(getActivity().getBaseContext())).execute(mCurrentLocation);
-      }
-        }
+            (new GetAddressTask(getActivity().getBaseContext())).execute(mCurrentLocation);
+          }
   }
   
   private boolean servicesConnected() {
@@ -398,18 +453,19 @@ public class DetailsFragment extends Fragment
         }
     }
     
-  private class GetAddressTask extends
-    AsyncTask<Location, Void, String> {
+  private class GetAddressTask extends AsyncTask<Location, Void, String> {
       Context mContext;
+      Location loc;
       public GetAddressTask(Context context) {
           super();
           mContext = context;
       }
     @Override
     protected void onPostExecute(String address) {
-        //mActivityIndicator.setVisibility(View.GONE);
         mAddress.setText(address);
         EventLocation e_loc = pe.getEvent_location();
+        e_loc.setLoc_latitude(loc.getLatitude());
+        e_loc.setLoc_longitude(loc.getLongitude());
         e_loc.setLoc_str(address);
         pe.setEvent_location(e_loc);
     }
@@ -418,7 +474,7 @@ public class DetailsFragment extends Fragment
       Geocoder geocoder =
               new Geocoder(mContext, Locale.getDefault());
       // Get the current location from the input parameter list
-      Location loc = params[0];
+      loc = params[0];
       // Create a list to contain the result address
       List<Address> addresses = null;
       try {
@@ -502,6 +558,14 @@ public class DetailsFragment extends Fragment
     @Override
     public void onConnected(Bundle arg0) {
       Toast.makeText(getActivity(), "Connected", Toast.LENGTH_SHORT).show();
+      if (mDbHelper == null) 
+          mDbHelper = new PlansDbHelper(getActivity());
+      if (db == null) db = mDbHelper.getWritableDatabase();
+      if (pe == null) pe = mDbHelper.getPlanEventById(db, getEventID());
+      if (db.isOpen()) db.close();
+      if (pe.getId() == 0) {
+          mLocationClient.requestLocationUpdates(mLocationRequest, this);
+      }
     }
 
     @Override
@@ -515,43 +579,56 @@ public class DetailsFragment extends Fragment
         super.onCreate(savedInstanceState);
         mLocationClient = new LocationClient(getActivity().getBaseContext(),
             this, this);
+     // Create the LocationRequest object
+        mLocationRequest = LocationRequest.create();
+        // Use high accuracy
+        mLocationRequest.setPriority(
+                LocationRequest.PRIORITY_HIGH_ACCURACY);
+        // Set the update interval to 30 seconds
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        // Set the fastest update interval to 5 second
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
+    
     }
 
-    /*
-     * Called when the Activity becomes visible.
-     */
     @Override
     public void onStart() {
         super.onStart();
         mLocationClient.connect();
     }
-
-    /*
-     * Called when the Activity is no longer visible.
-     */
     @Override
-    public void onStop() {
-        // Disconnecting the client invalidates it.
+    public void onPause() {
         mLocationClient.disconnect();
-        super.onStop();
+        super.onPause();
     }
-  //Define the callback method that receives location updates
     @Override
     public void onLocationChanged(Location location) {
-        // Report to the UI that the location was updated
+        mCurrentLocation = location;
+        if (pe.getId() != 0) return;
         String msg = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude());
-        EventLocation e_loc = pe.getEvent_location();
-        e_loc.setLoc_latitude(location.getLatitude());
-        e_loc.setLoc_longitude(location.getLongitude());
-        e_loc.setLoc_str("");
-        pe.setEvent_location(e_loc);
-        
+        getAddress();
         Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
     }
   
-  public void onPictureClick(View view){
-      
-  }
+    public void onPictureClick(){
+        PackageManager pm = getActivity().getPackageManager();
+        if (!pm.hasSystemFeature(PackageManager.FEATURE_CAMERA)){
+            Toast.makeText(getActivity(), 
+                    getActivity().getResources().
+                        getString(R.string.alert_nocamera), 
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(pm) != null) {
+            File download = Environment
+                    .getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File image = new File(download + "/shotPlace.jpg");
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT,
+                    Uri.fromFile(image));
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+        }
+    }
 }

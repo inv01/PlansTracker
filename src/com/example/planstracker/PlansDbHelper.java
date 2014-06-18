@@ -6,9 +6,11 @@ import java.util.Locale;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.preference.PreferenceManager;
 import android.provider.BaseColumns;
 import android.util.Log;
 import android.util.SparseArray;
@@ -48,12 +50,12 @@ public class PlansDbHelper extends SQLiteOpenHelper {
         DbEn.CN_PERSON + TEXT_TYPE + COMMA_SEP +
         DbEn.CN_PHONE + TEXT_TYPE + COMMA_SEP +
         DbEn.CN_EMAIL + TEXT_TYPE + COMMA_SEP +
-        DbEn.CN_HOURS + TEXT_TYPE + " DEFAULT 0 " + COMMA_SEP +
+        DbEn.CN_HOURS + REAL_TYPE + " DEFAULT 0 " + COMMA_SEP +
         DbEn.CN_MONEY + REAL_TYPE + " DEFAULT 0 " + COMMA_SEP +
         DbEn.CN_NOTE + TEXT_TYPE + COMMA_SEP +
         DbEn.CN_PICTURE + BLOB_TYPE + COMMA_SEP +
-        DbEn.CN_LOC_LNG + REAL_TYPE + COMMA_SEP +
-        DbEn.CN_LOC_LAT + REAL_TYPE + COMMA_SEP +
+        DbEn.CN_LOC_LNG + REAL_TYPE + " DEFAULT 0 " + COMMA_SEP +
+        DbEn.CN_LOC_LAT + REAL_TYPE + " DEFAULT 0 " + COMMA_SEP +
         DbEn.CN_LOC_NAME + TEXT_TYPE +
         " )";
     private static final String SQL_DELETE_TABLES =
@@ -82,11 +84,21 @@ public class PlansDbHelper extends SQLiteOpenHelper {
     }
     
     public SparseArray<String> getAllTasks(SQLiteDatabase db){
+        SharedPreferences app_preferences = 
+                PreferenceManager.getDefaultSharedPreferences(mContext);
+        long sel_date = app_preferences.getLong("date", 0);
+        long plus1_day = sel_date + (1000 * 60 * 60 * 24);
+        // || sel_date == (new Date()).getTime()
+        String where = (sel_date == 0) ? ""
+                : (" WHERE " + DbEn.CN_DATE + " <= " + plus1_day);
+
         SparseArray<String> sa = new SparseArray<String>();
         sa.put(0, mContext.getResources().getString(R.string.add_newtask));
         String select = "SELECT " + DbEn._ID + COMMA_SEP +
                 DbEn.CN_DATE + COMMA_SEP + "ifnull(" + DbEn.CN_PERSON + ",'')" + DbEn.CN_PERSON +
-                " FROM " + DbEn.TABLE_TPLAN + " order by " + DbEn.CN_DATE + " desc";
+                " FROM " + DbEn.TABLE_TPLAN + 
+                where +
+                " order by " + DbEn.CN_DATE + " desc";
         Cursor cursor = db.rawQuery(select, null);
         if(cursor.getCount() > 0){
             SimpleDateFormat sf = new SimpleDateFormat("EEE, dd/MM/yyyy HH:mm", Locale.getDefault());

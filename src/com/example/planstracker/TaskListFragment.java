@@ -2,6 +2,7 @@ package com.example.planstracker;
 
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
@@ -17,7 +18,7 @@ import android.widget.TextView;
 public class TaskListFragment extends ListFragment {
   boolean mDualPane;
   private PlansDbHelper mDbHelper;
-  private SQLiteDatabase db;
+  private Context mContext;
   int mCurCheckPosition = 0;
   private SparseArray<String> list_values;
   
@@ -43,21 +44,31 @@ public class TaskListFragment extends ListFragment {
   
   public void setAdapter(){
       mDbHelper = new PlansDbHelper(getActivity());
-      db = mDbHelper.getWritableDatabase();
+      if (getActivity() == null ||
+              (mDbHelper == null && mContext != null)){
+          mDbHelper = new PlansDbHelper(mContext);
+      }
+      SQLiteDatabase db = mDbHelper.getWritableDatabase();
       list_values = mDbHelper.getAllTasks(db);
+      db.close();
       EventsArrayAdapter adapter = new EventsArrayAdapter(getActivity(), list_values);
       setListAdapter(adapter);
   }
-  
+
   public void onStart(){
       super.onStart();
       setAdapter();
+  }
+
+  public void onAttach(Activity activity){
+      super.onAttach(activity);
+      this.mContext = activity;
   }
   
   @Override
   public void onActivityCreated(Bundle savedState) {
       super.onActivityCreated(savedState);
-      
+      mContext = getActivity();
       View detailsFrame = getActivity().findViewById(R.id.details);
       mDualPane = detailsFrame != null
               && detailsFrame.getVisibility() == View.VISIBLE;
@@ -65,11 +76,19 @@ public class TaskListFragment extends ListFragment {
       if (savedState != null) {
           mCurCheckPosition = savedState.getInt("curChoice", 0);
       }
-
+      
       if (mDualPane) {
           setAdapter();
           getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
           showDetails(mCurCheckPosition);
+      } else {
+          DetailsFragment details = (DetailsFragment)
+                  getFragmentManager().findFragmentById(R.id.details);
+          if (details != null){
+              FragmentTransaction ft = getFragmentManager().beginTransaction();
+              ft.remove(details);
+              ft.commit();
+          }
       }
   }
   
@@ -94,7 +113,7 @@ public class TaskListFragment extends ListFragment {
 
       if (mDualPane) {
            getListView().setItemChecked(index, true);
-
+           
           DetailsFragment details = (DetailsFragment)
                   getFragmentManager().findFragmentById(R.id.details);
           if (details == null || details.getEventID() != index) {

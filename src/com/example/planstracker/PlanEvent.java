@@ -21,8 +21,7 @@ public class PlanEvent{
             byte[] pic, double hours, String note, EventLocation event_location) {
         super();
         this._id = _id;
-        this.event_datetime = (event_datetime != null)? event_datetime : 
-            Calendar.getInstance().getTime();
+        this.event_datetime = event_datetime;
         this.person_name = (person_name != null) ? person_name : "";
         this.phone_number =  (phone_number != null) ? phone_number : "";
         this.email_address =  (email_address != null) ? email_address : "";

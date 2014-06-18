@@ -14,10 +14,29 @@ apply plugin: 'android'
 dependencies {
 	compile 'com.android.support:appcompat-v7:19.0.+'
 	compile 'com.google.android.gms:play-services:3.2.+'
+	compile files('libs/jxl-2.6.12.jar')
 }
 
 android {
-
+	signingConfigs {
+        release {
+            storeFile file('keystores/release.keystore')
+            storePassword "Key01_rs"
+            keyAlias "key_alias"
+            keyPassword "Key01_rs"
+        }
+		debug {
+            storeFile file('keystores/debug.keystore')
+        }
+    }
+	buildTypes {
+        release {
+			signingConfig signingConfigs.release
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), \
+                          'proguard-rules.txt'
+        }
+    }
 sourceSets {
       main {
           manifest.srcFile 'AndroidManifest.xml'

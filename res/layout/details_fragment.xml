@@ -1,64 +1,80 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout 
-       xmlns:android="http://schemas.android.com/apk/res/android"
-       android:layout_width="match_parent" 
-       android:layout_height="match_parent"
-       android:id="@+id/frameLayout0"
-       android:paddingBottom="@dimen/activity_vertical_margin"
-       android:paddingLeft="@dimen/activity_horizontal_margin"
-       android:paddingRight="@dimen/activity_horizontal_margin"
-       android:paddingTop="@dimen/activity_vertical_margin">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frameLayout0"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin" >
+    
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+    <ScrollView 
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight=".80"
+            >
     <LinearLayout
-            android:id="@+id/details_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" >
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" 
+        >
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content" >
+
             <ImageButton
+                android:id="@+id/btnTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/btn_clock_draw"
                 android:contentDescription="@string/edit_data"
-                android:scaleType="center"
-                android:id="@+id/btnTime"/>
+                android:scaleType="center" />
+
             <TextView
                 android:id="@+id/tvDate"
-                android:contentDescription="@string/task_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                />
+                android:contentDescription="@string/task_date"
+                android:gravity="center" />
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <ImageView
-                android:contentDescription="@string/img_name"
+                android:id="@+id/btnContact"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/btn_name_draw"
-                android:id="@+id/btnContact"
-                />
+                android:contentDescription="@string/img_name"
+                android:src="@drawable/btn_name_draw" />
+
             <EditText
                 android:id="@+id/edt_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPersonName" >
+
                 <requestFocus />
             </EditText>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <ImageView
-                android:contentDescription="@string/img_phone"
                 android:id="@+id/btnPhone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/btn_phone_draw"
-                />
+                android:contentDescription="@string/img_phone"
+                android:src="@drawable/btn_phone_draw" />
+
             <EditText
                 android:id="@+id/edt_phone"
                 android:layout_width="match_parent"
@@ -66,15 +82,17 @@
                 android:inputType="phone" >
             </EditText>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <TextView
-                android:contentDescription="@string/img_email"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/img_email"
-                />
+                android:contentDescription="@string/img_email"
+                android:text="@string/img_email" />
+
             <EditText
                 android:id="@+id/edt_email"
                 android:layout_width="match_parent"
@@ -82,15 +100,17 @@
                 android:inputType="textEmailAddress" >
             </EditText>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <TextView
-                android:contentDescription="@string/img_price"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/img_price"
-                />
+                android:contentDescription="@string/img_price"
+                android:text="@string/img_price" />
+
             <EditText
                 android:id="@+id/edt_price"
                 android:layout_width="wrap_content"
@@ -98,12 +118,13 @@
                 android:ems="5"
                 android:inputType="numberDecimal" >
             </EditText>
+
             <TextView
-                android:contentDescription="@string/img_hours"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/img_hours"
-                />
+                android:contentDescription="@string/img_hours"
+                android:text="@string/img_hours" />
+
             <EditText
                 android:id="@+id/edt_hours"
                 android:layout_width="wrap_content"
@@ -112,105 +133,127 @@
                 android:inputType="numberDecimal" >
             </EditText>
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
-            <TextView
-                android:contentDescription="@string/data_comment"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/data_comment"
-                />
-            <EditText
-                android:id="@+id/edt_memo"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textMultiLine" />
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+
             <ImageButton
+                android:id="@+id/btnSave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/btn_save_draw"
                 android:contentDescription="@string/save_data"
-                android:scaleType="center"
-                android:id="@+id/btnSave"/>
+                android:scaleType="center" />
+
             <ImageButton
+                android:id="@+id/btnDelete"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/btn_delete_draw"
                 android:contentDescription="@string/delete_data"
-                android:scaleType="center"
-                android:id="@+id/btnDelete"/>
+                android:scaleType="center" />
         </LinearLayout>
     </LinearLayout>
-    
+    </ScrollView>
+        <LinearLayout 
+            android:id="@+id/free_space"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight=".20"
+            />
+    </LinearLayout>
     <SlidingDrawer
         android:id="@+id/drawer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:content="@+id/content"
-        android:handle="@+id/handle"
-         >
+        android:handle="@+id/handle" >
+
         <ToggleButton
             android:id="@+id/handle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textOn="@string/less" 
             android:textOff="@string/more"
-            />
-        <LinearLayout
-            android:id="@+id/content"
+            android:textOn="@string/less" />
+        <ScrollView 
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical" 
-            android:background= "@color/drawer_color"
+            >
+        <LinearLayout
+            android:id="@+id/content"
+            android:background="@color/drawer_color"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
             android:paddingBottom="@dimen/activity_vertical_margin"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin"
-            android:paddingTop="@dimen/activity_vertical_margin">
+            android:paddingTop="@dimen/activity_vertical_margin" >
+
             <ImageView
-                android:contentDescription="@string/img_contact"
                 android:id="@+id/btnPicture"
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
+                android:contentDescription="@string/img_contact"
                 android:src="@drawable/btn_img_draw" />
-            <TextView 
+
+            <TextView
                 android:id="@+id/address"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:lines="3"
                 android:gravity="bottom"
-                />
+                android:lines="3" />
+
             <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background= "@color/drawer_color" >
-            <ImageButton
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/btn_refresh_draw"
-                android:id="@+id/btnRefreshLocation"
-                android:contentDescription="@string/refresh_data"
-                android:scaleType="center"/>
-            <TextView 
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/update_location"
-                android:gravity="center_vertical"
-                />
-            <ProgressBar
-                android:id="@+id/address_progress"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:indeterminate="true"
-                android:visibility="gone" />
+                android:background="@color/drawer_color" >
+
+                <ImageButton
+                    android:id="@+id/btnRefreshLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_refresh_draw"
+                    android:contentDescription="@string/refresh_data"
+                    android:scaleType="center" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:text="@string/update_location" />
+
+                <ProgressBar
+                    android:id="@+id/address_progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:indeterminate="true"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" >
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/data_comment"
+                    android:text="@string/data_comment" />
+
+                <EditText
+                    android:id="@+id/edt_memo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="textMultiLine" />
             </LinearLayout>
         </LinearLayout>
+        </ScrollView>
     </SlidingDrawer>
+
 </FrameLayout>
